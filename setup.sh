@@ -139,7 +139,7 @@ install_kubernetes_cluster_master() {
     mkdir -p $HOME/.kube
     sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
     sudo chown $(id -u):$(id -g) $HOME/.kube/config
-    kubectl get node -A
+    watch kubectl get node -A
 }
 
 
