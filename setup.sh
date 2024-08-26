@@ -300,7 +300,10 @@ install_kubernetes_worker() {
             echo "containerd is already installed."
         fi
         
-        
+        sudo systemctl restart containerd
+        sudo sysctl -w net.ipv4.ip_forward=1
+        echo "net.ipv4.ip_forward = 1" | sudo tee -a /etc/sysctl.conf
+        sudo sysctl -p
         
         # Install Kubernetes Worker
         sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates curl gpg
@@ -322,6 +325,11 @@ install_kubernetes_worker() {
         sudo systemctl daemon-reload
         sudo systemctl restart kubelet
         
+        read -p "Enter the user: " new_user
+        echo "Changing hostname to $new_user..."
+
+        sudo $new_user
+        echo "Currrent Access to $new_user..."
         # Generate SSH key if not already present
         if [ ! -f ~/.ssh/id_rsa ]; then
             echo "Generating SSH key..."
