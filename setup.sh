@@ -96,7 +96,7 @@ install_kubernetes_cluster_master() {
         sudo containerd config default | sudo tee /etc/containerd/config.toml
         sudo systemctl restart containerd
 
-        # Configure cgroup driver for containerd
+
         
         sudo systemctl restart containerd
         sudo sysctl -w net.ipv4.ip_forward=1
@@ -118,16 +118,12 @@ install_kubernetes_cluster_master() {
     sudo systemctl enable --now kubelet
     sudo swapoff -a
     sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
-
-
     # Configure cgroup driver for kubelet
     sudo sed -i 's/^KUBELET_EXTRA_ARGS=.*/KUBELET_EXTRA_ARGS=--cgroup-driver=systemd/' /etc/default/kubelet
     sudo systemctl daemon-reload
     sudo systemctl restart kubelet
     sudo rm /etc/containerd/config.toml
     sudo systemctl restart containerd
-
-
     # Check network interface
     ip addr show
     read -p "Enter the network interface (e.g., eth0): " net_interface
@@ -138,9 +134,9 @@ install_kubernetes_cluster_master() {
     sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
     sudo chown $(id -u):$(id -g) $HOME/.kube/config
     kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.28.1/manifests/calico.yaml
+    # Configure cgroup driver for containerd
     sudo sed -i 's/^\(.*\)systemd_cgroup = false/\1systemd_cgroup = true/' /etc/containerd/config.toml
     echo "Kubernetes Cluster Master Node installation complete."
-
     # Test Kubernetes installation
     kubectl get node -A
 }
