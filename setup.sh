@@ -298,9 +298,7 @@ install_kubernetes_worker() {
             echo "containerd is already installed."
         fi
         
-        # Set cgroup driver for containerd
-        sudo sed -i 's/^SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
-        sudo systemctl restart containerd
+        
         
         # Install Kubernetes Worker
         sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates curl gpg
@@ -340,6 +338,9 @@ install_kubernetes_worker() {
         if [ -n "$JOIN_COMMAND" ]; then
             sudo $JOIN_COMMAND
             echo "Successfully joined the Kubernetes cluster."
+            # Set cgroup driver for containerd
+            sudo sed -i 's/^SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+            sudo systemctl restart containerd
         else
             echo "Failed to retrieve join command from the master node."
         fi
