@@ -323,6 +323,19 @@ install_kubernetes_worker() {
         echo "Current machine is NOT on the same network and subnet as the master node. Aborting installation."
     fi
 }
+# mylogo
+echo "
+  ____             _             __  __                  
+ |  _ \ ___  _ __ | |_ ___ _ __ |  \/  | ___ _ __  _   _ 
+ | |_) / _ \| '_ \| __/ _ \ '_ \| |\/| |/ _ \ '_ \| | | |
+ |  _ < (_) | |_) | ||  __/ | | | |  | |  __/ | | | |_| |
+ |_| \_\___/| .__/ \__\___|_| |_|_|  |_|\___|_| |_|\__,_|
+            |_|                                         
+"
+echo "========================================================="
+echo "====                 Hi Everyone                     ===="
+echo "====         Create by Phone RapterxCode             ===="
+echo "========================================================="
 
 # Menu
 echo "Please select an option:"
