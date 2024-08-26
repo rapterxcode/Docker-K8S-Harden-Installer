@@ -94,6 +94,10 @@ install_kubernetes_cluster_master() {
         # Configure cgroup driver for containerd
         sudo sed -i 's/^\(.*\)systemd_cgroup = false/\1systemd_cgroup = true/' /etc/containerd/config.toml
         sudo systemctl restart containerd
+        sudo sysctl -w net.ipv4.ip_forward=1
+        echo "net.ipv4.ip_forward = 1" | sudo tee -a /etc/sysctl.conf
+        sudo sysctl -p
+
     else
         echo "containerd is already installed."
     fi
@@ -109,6 +113,7 @@ install_kubernetes_cluster_master() {
     sudo systemctl enable --now kubelet
     sudo swapoff -a
     sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
+
 
     # Configure cgroup driver for kubelet
     sudo sed -i 's/^KUBELET_EXTRA_ARGS=.*/KUBELET_EXTRA_ARGS=--cgroup-driver=systemd/' /etc/default/kubelet
