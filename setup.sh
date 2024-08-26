@@ -328,6 +328,9 @@ install_kubernetes_worker() {
         read -p "Enter the user : " new_user
         echo "Changing hostname to $new_user..."
 
+        read -p "Enter the password : " new_pass
+        echo "Changing hostname to $new_pass..."
+
         sudo $new_user
         echo "Currrent Access to $new_user..."
         # Generate SSH key if not already present
@@ -342,7 +345,7 @@ install_kubernetes_worker() {
         
         # Request join command from the master node
         echo "Requesting join command from the master node..."
-        JOIN_COMMAND=$(ssh $(whoami)@$MASTER_IP "sudo kubeadm token create --print-join-command")
+        JOIN_COMMAND=$(ssh lsiam@192.168.28.76 "echo '$new_pass' | sudo -S kubeadm token create --print-join-command")
         echo "=========================================="
         echo "Using This Command :  "+ $JOIN_COMMAND
         
