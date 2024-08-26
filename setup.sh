@@ -97,7 +97,7 @@ install_kubernetes_cluster_master() {
         sudo systemctl restart containerd
 
         # Configure cgroup driver for containerd
-        sudo sed -i 's/^\(.*\)systemd_cgroup = false/\1systemd_cgroup = true/' /etc/containerd/config.toml
+        
         sudo systemctl restart containerd
         sudo sysctl -w net.ipv4.ip_forward=1
         echo "net.ipv4.ip_forward = 1" | sudo tee -a /etc/sysctl.conf
@@ -124,18 +124,21 @@ install_kubernetes_cluster_master() {
     sudo sed -i 's/^KUBELET_EXTRA_ARGS=.*/KUBELET_EXTRA_ARGS=--cgroup-driver=systemd/' /etc/default/kubelet
     sudo systemctl daemon-reload
     sudo systemctl restart kubelet
+    sudo rm /etc/containerd/config.toml
+    sudo systemctl restart containerd
+
 
     # Check network interface
     ip addr show
     read -p "Enter the network interface (e.g., eth0): " net_interface
-    cidr=$(ip -o -f inet addr show $net_interface | awk '{print $4}')
+    cidr=$(ip -o -f inet addr show "$net_interface" | awk '{print $4}')
     echo "Using CIDR: $cidr"
-
     sudo kubeadm init --pod-network-cidr=$cidr
     mkdir -p $HOME/.kube
     sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
     sudo chown $(id -u):$(id -g) $HOME/.kube/config
     kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.28.1/manifests/calico.yaml
+    sudo sed -i 's/^\(.*\)systemd_cgroup = false/\1systemd_cgroup = true/' /etc/containerd/config.toml
     echo "Kubernetes Cluster Master Node installation complete."
 
     # Test Kubernetes installation
