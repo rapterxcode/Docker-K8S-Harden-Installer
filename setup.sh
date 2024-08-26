@@ -256,6 +256,11 @@ install_docker_worker() {
 
 # Fuction Install Kubernetes Worker
 install_kubernetes_worker() {
+    read -p "Enter the new hostname: " new_hostname
+    echo "Changing hostname to $new_hostname..."
+    sudo hostnamectl set-hostname $new_hostname
+    sudo sed -i "s/127.0.1.1.*/127.0.1.1 $new_hostname/" /etc/hosts
+    #    
     read -p "Enter the IP address of the master node: " MASTER_IP
     echo "Installing containerd and Kubernetes Worker..."
     
