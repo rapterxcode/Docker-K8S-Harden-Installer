@@ -325,7 +325,7 @@ install_kubernetes_worker() {
         sudo systemctl daemon-reload
         sudo systemctl restart kubelet
         
-        read -p "Enter the user: " new_user
+        read -p "Enter the user : " new_user
         echo "Changing hostname to $new_user..."
 
         sudo $new_user
