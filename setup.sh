@@ -4,6 +4,7 @@
 harden_system() {
     echo "Performing Comprehensive Hardening..."
     sudo apt-get update -y && sudo apt-get upgrade -y
+    sudo apt-get install -y vim nano net-tools git wget curl
     sudo apt-get install -y ufw fail2ban apparmor apparmor-utils
     sudo ufw default deny incoming
     sudo ufw default allow outgoing
