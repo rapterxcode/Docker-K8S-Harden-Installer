@@ -81,6 +81,11 @@ install_docker_swarm_master() {
 
 # Fuction Install Kubernetes Cluster Master Node
 install_kubernetes_cluster_master() {
+    read -p "Enter the new hostname: " new_hostname
+    echo "Changing hostname to $new_hostname..."
+    sudo hostnamectl set-hostname $new_hostname
+    sudo sed -i "s/127.0.1.1.*/127.0.1.1 $new_hostname/" /etc/hosts
+
     echo "Checking if containerd is installed..."
     if ! command -v containerd &> /dev/null; then
         echo "containerd is not installed. Installing containerd..."
@@ -134,8 +139,9 @@ install_kubernetes_cluster_master() {
     echo "Kubernetes Cluster Master Node installation complete."
 
     # Test Kubernetes installation
-    kubectl get all -A
+    kubectl get node -A
 }
+
 
 # Fuction Install Docker Standalone
 install_docker_standalone() {
