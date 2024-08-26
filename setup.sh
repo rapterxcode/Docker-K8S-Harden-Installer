@@ -130,14 +130,15 @@ install_kubernetes_cluster_master() {
     cidr=$(ip -o -f inet addr show "$net_interface" | awk '{print $4}')
     echo "Using CIDR: $cidr"
     sudo kubeadm init --pod-network-cidr=$cidr
-    mkdir -p $HOME/.kube
-    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-    sudo chown $(id -u):$(id -g) $HOME/.kube/config
+    #
     kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.28.1/manifests/calico.yaml
     # Configure cgroup driver for containerd
     sudo sed -i 's/^\(.*\)systemd_cgroup = false/\1systemd_cgroup = true/' /etc/containerd/config.toml
     echo "Kubernetes Cluster Master Node installation complete."
     # Test Kubernetes installation
+    mkdir -p $HOME/.kube
+    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+    sudo chown $(id -u):$(id -g) $HOME/.kube/config
     kubectl get node -A
 }
 
