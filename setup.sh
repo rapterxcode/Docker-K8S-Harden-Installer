@@ -345,7 +345,7 @@ install_kubernetes_worker() {
         JOIN_COMMAND=$(ssh $(whoami)@$MASTER_IP "sudo kubeadm token create --print-join-command")
         echo "=========================================="
         echo "Use this command $JOIN_COMMAND
-        echo "=========================================="
+              echo "=========================================="
         # Join the cluster
         if [ -n "$JOIN_COMMAND" ]; then
             sudo $JOIN_COMMAND
