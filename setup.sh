@@ -17,6 +17,8 @@ harden_system() {
     sudo systemctl enable fail2ban
     sudo systemctl start fail2ban
     sudo sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
+    sudo swapoff -a
+    sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
     sudo systemctl restart sshd
     sudo systemctl enable apparmor
     sudo systemctl start apparmor
@@ -305,24 +307,19 @@ install_kubernetes_worker() {
         sudo apt-get update
         sudo apt-get install -y kubelet kubeadm kubectl
         sudo apt-mark hold kubelet kubeadm kubectl
-        sudo swapoff -a
-        sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
-        echo "Kubernetes Worker installation completed."
         
+        echo "Kubernetes Worker installation completed."
         # Set cgroup driver for kubelet
         sudo sed -i 's/^KUBELET_EXTRA_ARGS=.*/KUBELET_EXTRA_ARGS=--cgroup-driver=systemd/' /etc/default/kubelet
-        
         # Restart kubelet
         sudo systemctl daemon-reload
         sudo systemctl restart kubelet
-        
+        # Input user and pass
         read -p "Enter the user: " new_user
         read -p "Enter the password: " new_pass
-
+        # Change visudoer
         sudo -S bash -c "echo '$new_user ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers"
         echo "Show User: $new_user" && echo "Show Password: $new_pass"
-
-
         # Generate SSH key if not already present
         if [ ! -f ~/.ssh/id_rsa ]; then
             echo "============================"
@@ -330,18 +327,15 @@ install_kubernetes_worker() {
             ssh-keygen -t rsa -b 4096 -N "" -f ~/.ssh/id_rsa
             echo "============================"
         fi
-        
         # Copy SSH key to master node
         sudo apt-get install -y sshpass
         echo "Copying SSH key to master node..."
         sshpass -p "$new_pass" ssh-copy-id -o StrictHostKeyChecking=no $new_user@$MASTER_IP
-        
         # Request join command from the master node
         echo "Requesting join command from the master node..."
         JOIN_COMMAND=$(ssh $new_user@$MASTER_IP "echo '$new_pass' | sudo -S kubeadm token create --print-join-command")
         echo "=========================================="
         echo "Show Command: $JOIN_COMMAND"
-        
         # Join the cluster
         if [ -n "$JOIN_COMMAND" ]; then
             sudo $JOIN_COMMAND
