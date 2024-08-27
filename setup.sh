@@ -258,7 +258,8 @@ install_docker_worker() {
 # Fuction Install Kubernetes Worker
 install_kubernetes_worker() {
     read -p "Enter the new hostname: " new_hostname
-    echo "Changing hostname to $new_hostname..."
+    echo $new_hostname
+    echo "Set Hostnamectl ..."
     sudo hostnamectl set-hostname $new_hostname
     sudo sed -i "s/127.0.1.1.*/127.0.1.1 $new_hostname/" /etc/hosts
     #    
@@ -288,7 +289,6 @@ install_kubernetes_worker() {
         if ! command -v containerd &> /dev/null; then
             echo "containerd not found, installing..."
             sudo apt-get update && sudo apt-get install -y containerd
-            
             # Create containerd configuration file
             sudo mkdir -p /etc/containerd
             containerd config default | sudo tee /etc/containerd/config.toml
@@ -325,29 +325,31 @@ install_kubernetes_worker() {
         sudo systemctl daemon-reload
         sudo systemctl restart kubelet
         
-        read -p "Enter the user : " new_user
-        echo "Changing hostname to $new_user..."
+        read -p "Enter the user: " new_user
+        read -p "Enter the password: " new_pass
 
-        read -p "Enter the password : " new_pass
-        echo "Changing hostname to $new_pass..."
+        sudo -S bash -c "echo '$new_user ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers"
+        echo "Show User: $new_user" && echo "Show Password: $new_pass"
 
-        sudo $new_user
-        echo "Currrent Access to $new_user..."
+
         # Generate SSH key if not already present
         if [ ! -f ~/.ssh/id_rsa ]; then
+            echo "============================"
             echo "Generating SSH key..."
             ssh-keygen -t rsa -b 4096 -N "" -f ~/.ssh/id_rsa
+            echo "============================"
         fi
         
         # Copy SSH key to master node
+        sudo apt-get install -y sshpass
         echo "Copying SSH key to master node..."
-        ssh-copy-id $(whoami)@$MASTER_IP
+        sshpass -p "$new_pass" ssh-copy-id -o StrictHostKeyChecking=no $new_user@$MASTER_IP
         
         # Request join command from the master node
         echo "Requesting join command from the master node..."
-        JOIN_COMMAND=$(ssh lsiam@192.168.28.76 "echo '$new_pass' | sudo -S kubeadm token create --print-join-command")
+        JOIN_COMMAND=$(ssh $new_user@$MASTER_IP "echo '$new_pass' | sudo -S kubeadm token create --print-join-command")
         echo "=========================================="
-        echo "Using This Command :  "+ $JOIN_COMMAND
+        echo "Show Command: $JOIN_COMMAND"
         
         # Join the cluster
         if [ -n "$JOIN_COMMAND" ]; then
