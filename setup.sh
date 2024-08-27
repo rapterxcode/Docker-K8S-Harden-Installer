@@ -11,6 +11,8 @@ harden_system() {
     sudo ufw allow ssh
     sudo ufw allow http
     sudo ufw allow https
+    sudo ufw allow 6443/tcp
+    sudo ufw allow 6443/udp
     sudo ufw enable
     sudo systemctl enable fail2ban
     sudo systemctl start fail2ban
@@ -19,6 +21,7 @@ harden_system() {
     sudo systemctl enable apparmor
     sudo systemctl start apparmor
     sudo bash -c 'cat <<EOF >> /etc/sysctl.conf
+net.ipv4.ip_forward = 1
 # IP Spoofing protection
 net.ipv4.conf.all.rp_filter = 1
 net.ipv4.conf.default.rp_filter = 1
@@ -95,14 +98,6 @@ install_kubernetes_cluster_master() {
         sudo mkdir -p /etc/containerd
         sudo containerd config default | sudo tee /etc/containerd/config.toml
         sudo systemctl restart containerd
-
-
-        
-        sudo systemctl restart containerd
-        sudo sysctl -w net.ipv4.ip_forward=1
-        echo "net.ipv4.ip_forward = 1" | sudo tee -a /etc/sysctl.conf
-        sudo sysctl -p
-
     else
         echo "containerd is already installed."
     fi
