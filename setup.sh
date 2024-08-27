@@ -294,11 +294,7 @@ install_kubernetes_worker() {
         else
             echo "containerd is already installed."
         fi
-        
         sudo systemctl restart containerd
-        sudo sysctl -w net.ipv4.ip_forward=1
-        echo "net.ipv4.ip_forward = 1" | sudo tee -a /etc/sysctl.conf
-        sudo sysctl -p
         
         # Install Kubernetes Worker
         sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates curl gpg
