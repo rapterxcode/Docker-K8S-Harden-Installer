@@ -262,26 +262,21 @@ install_kubernetes_worker() {
     #    
     read -p "Enter the IP address of the master node: " MASTER_IP
     echo "Installing containerd and Kubernetes Worker..."
-    
     # Install ipcalc if not already installed
     if ! command -v ipcalc &> /dev/null; then
         echo "ipcalc not found, installing..."
         sudo apt update
         sudo apt install -y ipcalc
     fi
-    
     # Get the current machine's IP address and subnet mask
     CURRENT_IP=$(hostname -I | awk '{print $1}')
     CURRENT_SUBNET=$(ip -o -f inet addr show | awk '/scope global/ {print $4}')
-    
     # Calculate the network part of the IP address and subnet mask
     MASTER_NETWORK=$(ipcalc -n $MASTER_IP $CURRENT_SUBNET | grep Network | awk '{print $2}')
     CURRENT_NETWORK=$(ipcalc -n $CURRENT_IP $CURRENT_SUBNET | grep Network | awk '{print $2}')
-    
     # Check if the current machine is on the same network and subnet as the master node
     if [ "$MASTER_NETWORK" == "$CURRENT_NETWORK" ]; then
         echo "Current machine is on the same network and subnet as the master node."
-        
         # Check if containerd is already installed
         if ! command -v containerd &> /dev/null; then
             echo "containerd not found, installing..."
@@ -289,7 +284,6 @@ install_kubernetes_worker() {
             # Create containerd configuration file
             sudo mkdir -p /etc/containerd
             containerd config default | sudo tee /etc/containerd/config.toml
-            
             # Start and enable containerd
             sudo systemctl restart containerd
             sudo systemctl enable containerd
@@ -297,7 +291,6 @@ install_kubernetes_worker() {
             echo "containerd is already installed."
         fi
         sudo systemctl restart containerd
-        
         # Install Kubernetes Worker
         sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates curl gpg
         # If the directory `/etc/apt/keyrings` does not exist, it should be created before the curl command, read the note below.
@@ -307,7 +300,6 @@ install_kubernetes_worker() {
         sudo apt-get update
         sudo apt-get install -y kubelet kubeadm kubectl
         sudo apt-mark hold kubelet kubeadm kubectl
-        
         echo "Kubernetes Worker installation completed."
         # Set cgroup driver for kubelet
         sudo sed -i 's/^KUBELET_EXTRA_ARGS=.*/KUBELET_EXTRA_ARGS=--cgroup-driver=systemd/' /etc/default/kubelet
